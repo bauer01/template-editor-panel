@@ -5,7 +5,7 @@ namespace TemplateEditor;
 use Nette\Utils\Finder;
 
 /**
- * TODO add caching
+ * @todo add caching
  */
 class Filter
 {
@@ -25,6 +25,10 @@ class Filter
         }
 
 
+        /**
+         * Load filters
+         * @return array 
+         */
         public function loadFilters()
         {
                 $filters = array();
@@ -36,6 +40,11 @@ class Filter
         }
 
 
+        /**
+         * Run filters
+         * @param string $code
+         * @return string 
+         */
         public function applyFilters($code)
         {
                 $code = htmlspecialchars($code);
@@ -49,6 +58,12 @@ class Filter
         }
 
 
+        /**
+         * Highlight code
+         * @param string $code
+         * @param array $filter
+         * @return string 
+         */
         private function highlight($code, $filter)
         {
                 $style = $filter["STYLE"];
@@ -84,6 +99,14 @@ class Filter
         }
 
 
+        /**
+         * Colorize properties
+         * @param string $code
+         * @param string $tag
+         * @param array $macro
+         * @param string $style
+         * @return string 
+         */
         private function styleProperties($code, $tag, $macro, $style)
         {
                 if ($macro["STRICT"] === false) {
@@ -115,6 +138,14 @@ class Filter
         }
 
 
+        /**
+         * Colorize quotemarks
+         * @param string $code
+         * @param string $tag
+         * @param array $macro
+         * @param string $style
+         * @return string 
+         */
         private function styleQuotemarks($code, $tag, $macro, $style)
         {
                 if ($macro["STRICT"] === false) {
@@ -148,6 +179,14 @@ class Filter
         }
 
 
+        /**
+         * Colorize macros
+         * @param string $code
+         * @param string $tag
+         * @param array $macro
+         * @param string $style
+         * @return string
+         */
         private function styleMacro($code, $tag, $macro, $style)
         {
                 $start = htmlspecialchars($macro["START"]);

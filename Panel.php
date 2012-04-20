@@ -73,6 +73,9 @@ class Panel extends \Nette\Object implements \Nette\Diagnostics\IBarPanel
 	}
 
 
+        /**
+         * Process AJAX requests 
+         */
 	private function handleRequest()
 	{
                 $container = $this->container;
@@ -122,29 +125,21 @@ class Panel extends \Nette\Object implements \Nette\Diagnostics\IBarPanel
         private function isModificated($filePath, $loadtime)
         {
                 if (filemtime($filePath) > $loadtime)
-                    return true;
+                        return true;
                 else
-                    return false;
+                        return false;
         }
 
 
         private function printCode($file)
         {
-                $code = file_get_contents($file);
-
-                if (is_array($code))
-                        $linesCount = count($code);
-                else
-                        $linesCount = count(explode("\n", $code));
-
                 $filter = new Filter;
-
-                return $this->nl2br($filter->applyFilters($code));
+                return $this->nl2br($filter->applyFilters(file_get_contents($file)));
         }
 
 
         /**
-         * Prevent double lines in <pre> tag
+         * It helps to prevent double lines in <pre> tag
          * @param string $string
          * @return string
          */
