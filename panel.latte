@@ -1,0 +1,161 @@
+{ifset $templateCode}
+<style type="text/css">
+    #nette-debug .nette-inner { padding: 10px; }
+    #nette-debug #templateEditorPanel-editor { width: 650px; }
+    #nette-debug .templateEditorPanel-control { margin: 7px; padding: 5px; border: 1px solid #000000; }
+    #nette-debug .templateEditorPanel-button { background: #EDEAE0; cursor: pointer; border-radius: 3px 3px 3px 3px; }
+    #nette-debug strong { font-weight: bold; }
+    #nette-debug #templateEditorPanel-message { padding: 5px; font-weight: normal; border: 1px solid #fed22f; background: #ffe45c; color: #363636; font-weight: bold; }
+    #nette-debug #templateEditorPanel-message.hide { display: none; }
+    #nette-debug #templateEditorPanel-message.error { border: 1px solid #cd0a0a; background: #be2e17; color: #ffffff; }
+    #nette-debug pre {
+        white-space: pre-wrap;        css-3 
+        white-space: -moz-pre-wrap;   Mozilla 
+        white-space: -pre-wrap;       Opera 4-6 
+        white-space: -o-pre-wrap;     Opera 7 
+        word-wrap: break-word;        Internet Explorer 5.5+ 
+    }
+</style>
+
+<script type="text/javascript">
+var cookies = {
+        create: function(name,value,days) {
+                if (days) {
+                        var date = new Date();
+                        date.setTime(date.getTime()+(days*24*60*60*1000));
+                        var expires = "; expires="+date.toGMTString();
+                }
+                else var expires = "";
+                document.cookie = name+"="+value+expires+"; path=/";
+        },
+        read: function(name) {
+                var nameEQ = name + "=",
+                    ca = document.cookie.split(';');
+                for(var i=0;i < ca.length;i++) {
+                        var c = ca[i];
+                        while (c.charAt(0)==' ') c = c.substring(1,c.length);
+                        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+                }
+                return null;
+        }
+},
+templateEditorPanel = {
+	init: function() {
+		var saveButton = document.getElementById("templateEditorPanel-button-save");
+		saveButton.onclick = function () {
+			templateEditorPanel.save(false);
+		};
+                templateEditorPanel.setLoadTime();
+	},
+        getLoadTime: function() {
+                return cookies.read("{!$xhr_header}-LoadTime");
+        },
+        setLoadTime: function() {
+                var key = "{!$xhr_header}-LoadTime";
+                cookies.create(key, Math.round((new Date()).getTime() / 1000));
+        },
+        showMessage: function(message, status) {
+                var elem = document.getElementById("templateEditorPanel-message");
+
+                if (message) {
+                        elem.innerHTML = message;
+                        elem.removeAttribute("class");
+                        if (status)
+                                elem.setAttribute("class", status);
+                        elem.style.display = "block";
+                        setTimeout(function() { elem.style.display = "none"; }, 10000);
+                }
+        },
+        XMLHttpFactories: [
+                function () { return new XMLHttpRequest()},
+                function () { return new ActiveXObject("Msxml2.XMLHTTP")},
+                function () { return new ActiveXObject("Msxml3.XMLHTTP")},
+                function () { return new ActiveXObject("Microsoft.XMLHTTP")}
+        ],
+        createXMLHTTPObject: function() {
+                var xmlhttp = false;
+                for (var i = 0; i < templateEditorPanel.XMLHttpFactories.length; i++) {
+                        try {
+                                xmlhttp = templateEditorPanel.XMLHttpFactories[i]();
+                        }
+                        catch (e) {
+                                continue;
+                        }
+                        break;
+                }
+                return xmlhttp;
+        },
+        save: function(force) {
+                var req = templateEditorPanel.createXMLHTTPObject(),
+                    code = document.getElementById("templateEditorPanel-editor-code"),
+                    postData = { {$xhr_header}: {
+                        "file": {$templatePath},
+                        "loadtime": templateEditorPanel.getLoadTime(),
+                        "force": force
+                    }};
+
+                var newlines = code.innerHTML.replace(/<br\s*\/?>/mg,"\n"),
+                    div = document.createElement("div");
+                div.innerHTML = newlines;
+                code = div;
+
+                postData.{!$xhr_header}.data = code.innerText || code.textContent;
+
+                if (!req) return;
+                req.open("POST", {$presenterLink}, true);
+                req.setRequestHeader({$xhr_header}, 'devel');
+                req.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+                req.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
+                req.onreadystatechange = function () {
+                        if (req.readyState != 4) return;
+                        if (req.status != 200 && req.status != 304) {
+        			templateEditorPanel.showMessage('HTTP error ' + req.status, "error");
+                                return;
+                        }
+                        if (req.status == 200) {
+                                var autoRefresh = document.getElementById("templateEditorPanel-autoRefresh");
+
+                                if (req.responseText == "needconfirm" && force == false) {
+                                        if (confirm("Document was already modificated by someone else. Do you really want to continue?")) {
+                                                templateEditorPanel.save(true);
+                                        }
+                                        return;
+                                } else  {
+                                        templateEditorPanel.showMessage("Successfully saved");
+                                        templateEditorPanel.setLoadTime();
+                                        if (autoRefresh.checked == true) {
+                                                window.location.reload();
+                                        }
+                                }
+                        }
+                }
+
+                if (req.readyState == 4) return;
+                req.send(JSON.stringify(postData));
+        }
+}
+
+templateEditorPanel.init();
+</script>
+
+<h1>Template Editor - {basename($templatePath)}</h1>
+<div class="nette-inner">
+    <div id="templateEditorPanel-message" class="hide"></div>
+
+    <a href='#' rel='#nette-addons-details-1'>Details&nbsp;&#x25ba;</a>
+    <div id="nette-addons-details-1" style="display: none;">
+        <strong>Path:</strong> {$templatePath} <br />
+        <strong>File size:</strong> {filesize($templatePath)|bytes} <br />
+        <strong>Modified:</strong> {filemtime($templatePath)|date:'%H:%H:%S - %e. %h %Y'} <br />
+    </div>
+
+    <div id="templateEditorPanel-editor" contentEditable="true" class="templateEditorPanel-control">
+        <pre id="templateEditorPanel-editor-code">{!$templateCode}</pre>
+    </div>
+    <span id="templateEditorPanel-button-save" class="templateEditorPanel-control templateEditorPanel-button">Save</span>
+    <input id="templateEditorPanel-autoRefresh" type="checkbox" checked /> Refresh page
+</div>
+{else}
+<h1>Template Editor</h1>
+<div class="nette-inner">No template available.</div>
+{/ifset}
