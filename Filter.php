@@ -9,7 +9,7 @@ use Nette\Utils\Finder;
  */
 class Filter
 {
-        const HIGHLIGHTER = '<span style="%s">%s</span>';
+        const HIGHLIGHTER = '<span $$style$$="%s">%s</span>';
 
         /** @var array */
         private $filters;
@@ -54,6 +54,8 @@ class Filter
                             $code = $this->highlight($code, $filter);
                 }
 
+                $code = str_replace('$$style$$', 'style', $code);
+
                 return $code;
         }
 
@@ -81,16 +83,10 @@ class Filter
                         $expression = "/$start($keys).*?$end/";
                         preg_match_all($expression, $code, $matches);
 
-                        foreach ($matches[0] as $tag) {
+                        foreach ($matches[0] as $match) {
 
                                 if (isset($style["MACROS"][$macroKey])) {
-                                        $code = $this->styleMacro($code, $tag, $macro, $style["MACROS"][$macroKey]);
-                                }
-                                if (isset($style["PROPERTIES"])) {
-                                        $code = $this->styleProperties($code, $tag, $macro, $style["PROPERTIES"]);
-                                }
-                                if (isset($style["QUOTEMARKS"])) {
-                                        $code = $this->styleQuotemarks($code, $tag, $macro, $style["QUOTEMARKS"]);
+                                        $code = $this->styleMacro($code, $match, $macro, $style, $macroKey);
                                 }
                         }
                 }
@@ -100,79 +96,55 @@ class Filter
 
 
         /**
-         * Colorize properties
+         * Colorize macro properties
          * @param string $code
-         * @param string $tag
-         * @param array $macro
+         * @param array $properties
          * @param string $style
          * @return string 
          */
-        private function styleProperties($code, $tag, $macro, $style)
+        private function styleMacroProperties($code, $properties, $style)
         {
-                if ($macro["STRICT"] === false) {
+            if (!empty($style)) {
 
-                        if (!empty($style)) {
+                    foreach ($properties as $property) {
 
-                                $properties = $macro["PROPERTIES"];
-                                foreach ($properties as $property) {
+                            $replace = sprintf(self::HIGHLIGHTER, $style, $property);
+                            $code = str_replace(" $property", " $replace", $code);
+                    }
+            }
 
-                                        $property = htmlspecialchars($property);
-
-                                        $key = "\\$property";
-                                        $expression = "/[^\>] $property/";
-                                        preg_match_all($expression, $tag, $matches);
-
-
-                                        foreach ($matches[0] as $match) {
-
-                                                $content = substr($match, 1);
-                                                $replace = sprintf(self::HIGHLIGHTER, $style, $content);
-                                                $styled = substr_replace($match, $replace, 1);
-                                                $code = str_replace($match, $styled, $code);
-                                        }
-                                }
-                        }
-                }
-
-                return $code;
+            return $code;
         }
 
 
         /**
-         * Colorize quotemarks
+         * Colorize macro quotemarks
          * @param string $code
-         * @param string $tag
-         * @param array $macro
+         * @param array $quotemarks
          * @param string $style
          * @return string 
          */
-        private function styleQuotemarks($code, $tag, $macro, $style)
+        private function styleMacroQuotemarks($code, $quotemarks, $style)
         {
-                if ($macro["STRICT"] === false) {
+                if (!empty($style)) {
 
-                        if (!empty($style)) {
+                        foreach ($quotemarks as $quotemark) {
 
-                                $quotemarks = $macro["QUOTEMARKS"];
-                                foreach ($quotemarks as $quotemark) {
+                                $quotemark = htmlspecialchars($quotemark);
+                                $key = "\\$quotemark";
+                                $expression = "/$key.*?$key/";
+                                preg_match_all($expression, $code, $matches);
 
-                                        $quotemark = htmlspecialchars($quotemark);
+                                foreach ($matches[0] as $match) {
 
-                                        $key = "\\$quotemark";
-                                        $expression = "/$key.*?$key/";
-                                        preg_match_all($expression, $tag, $matches);
+                                        $quotemarkContent = substr($match, strlen($quotemark), strlen($match) - 2 * strlen($quotemark));
+                                        $replace = sprintf(self::HIGHLIGHTER, $style, $quotemarkContent);
 
-                                        foreach ($matches[0] as $match) {
-
-                                                $quotemarkContent = substr($match, strlen($quotemark), strlen($match) - 2 * strlen($quotemark));
-                                                $replace = sprintf(self::HIGHLIGHTER, $style, $quotemarkContent);
-
-                                                $quotemark_styled = $quotemark . substr_replace($match, $replace, 0, strlen($match)) . $quotemark;
-                                                $code = str_replace($match, $quotemark_styled, $code);
-                                        }
-
+                                        $quotemark_styled = $quotemark . substr_replace($match, $replace, 0, strlen($match)) . $quotemark;
+                                        $code = str_replace($match, $quotemark_styled, $code);
                                 }
-                        }
 
+                        }
                 }
 
                 return $code;
@@ -180,21 +152,22 @@ class Filter
 
 
         /**
-         * Colorize macros
+         * Colorize macro
          * @param string $code
          * @param string $tag
          * @param array $macro
          * @param string $style
+         * @param string $macroKey
          * @return string
          */
-        private function styleMacro($code, $tag, $macro, $style)
+        private function styleMacro($code, $tag, $macro, $style, $macroKey)
         {
                 $start = htmlspecialchars($macro["START"]);
                 $end = htmlspecialchars($macro["END"]);
 
                 if (isset($macro["STRICT"]) && $macro["STRICT"] === true) {
 
-                        $replace = sprintf(self::HIGHLIGHTER, $style, $tag);
+                        $replace = sprintf(self::HIGHLIGHTER, $style["MACROS"][$macroKey], $tag);
                         $macro_styled = substr_replace($tag, $replace, 0, strlen($tag));
                 } else {
 
@@ -203,7 +176,7 @@ class Filter
                                 $defined = strtolower($start."$keyword ");
                                 $first = substr($tag, 0, strlen($defined));
                                 if ($defined === strtolower($first)) {
-                                        $start = $first;
+                                        $start = rtrim($first);
                                 } else {
 
                                         $defined = strtolower($keyword.$end);
@@ -212,19 +185,28 @@ class Filter
                                                 $end = $last;
                                         }
                                 }
-
                         }
 
-                        $replace = sprintf(self::HIGHLIGHTER, $style, $start);
+                        
+                        $replace = sprintf(self::HIGHLIGHTER, $style["MACROS"][$macroKey], $start);
                         $macro_styled = substr_replace($tag, $replace, 0, strlen($start));
 
-                        $replace = sprintf(self::HIGHLIGHTER, $style, $end);
+                        $replace = sprintf(self::HIGHLIGHTER, $style["MACROS"][$macroKey], $end);
                         $macro_styled = substr_replace($macro_styled, $replace, strlen($macro_styled) - strlen($end), strlen($end));
+
+                        if (isset($style["PROPERTIES"])) {
+                                $macro_styled = $this->styleMacroProperties($macro_styled, $macro["PROPERTIES"], $style["PROPERTIES"]);
+                        }
+
+                        if (isset($style["QUOTEMARKS"])) {
+                                $macro_styled= $this->styleMacroQuotemarks($macro_styled, $macro["QUOTEMARKS"], $style["QUOTEMARKS"]);
+                        }
                 }
 
                 if (isset($macro_styled)) {
                         return str_replace($tag, $macro_styled, $code);
                 }
+
                 return $code;
         }
 }
