@@ -16,7 +16,13 @@ $filters[] = array(
                 'layout', 'link', 'plink', 'control', 'label', 'input', 'dump'
             ),
             "PROPERTIES" => array("=>"),
-            "QUOTEMARKS" => array("'", '"')
+            "QUOTEMARKS" => array("'", '"'),
+            "VARIABLES" => array(
+                1 => array(
+                    "START" => "$",
+                    "END" => "[^a-zA-Z0-9_]"
+                )
+            )
         )
     ),
     "STYLE" => array(
@@ -24,7 +30,10 @@ $filters[] = array(
         "MACROS" => array(
             1 => "color: #fa3f38; font-weight: bold;"
         ),
-        "PROPERTIES" => "color: #fa3f38;"
+        "PROPERTIES" => "color: #fa3f38;",
+        "VARIABLES" => array(
+            1 => "color: #e3a33b"
+        )
     )
 );
 ?>

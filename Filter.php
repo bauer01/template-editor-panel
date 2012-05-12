@@ -9,7 +9,7 @@ use Nette\Utils\Finder;
  */
 class Filter
 {
-        const HIGHLIGHTER = '<span $$style$$="%s">%s</span>';
+        const HIGHLIGHTER = '<span ßßstyleßß="%s">%s</span>';
 
         /** @var array */
         private $filters;
@@ -54,7 +54,7 @@ class Filter
                             $code = $this->highlight($code, $filter);
                 }
 
-                $code = str_replace('$$style$$', 'style', $code);
+                $code = str_replace('ßßstyleßß', 'style', $code);
 
                 return $code;
         }
@@ -152,6 +152,36 @@ class Filter
 
 
         /**
+         * Colorize macro variables
+         * @param string $code
+         * @param array $variables
+         * @param string $style
+         * @return string 
+         */
+        private function styleMacroVariables($code, $variables, $style)
+        {
+                if (!empty($style)) {
+
+                        foreach ($variables as $varKey => $variable) {
+
+                                $start = htmlspecialchars($variable["START"]);
+                                $expression = "/\\$start.*?".$variable['END']."/";
+                                preg_match_all($expression, $code, $matches);
+
+                                foreach ($matches[0] as $match) {
+                                        $end = substr($match, -1);
+                                        $match = substr($match, 0, strlen($match)-1);
+                                        $styled = sprintf(self::HIGHLIGHTER, $style[$varKey], $match);
+                                        $code = str_replace($match.$end, $styled.$end, $code);
+                                }
+                        }
+                }
+
+                return $code;
+        }
+
+
+        /**
          * Colorize macro
          * @param string $code
          * @param string $tag
@@ -196,6 +226,10 @@ class Filter
 
                         if (isset($style["PROPERTIES"])) {
                                 $macro_styled = $this->styleMacroProperties($macro_styled, $macro["PROPERTIES"], $style["PROPERTIES"]);
+                        }
+
+                        if (isset($style["VARIABLES"])) {
+                                $macro_styled= $this->styleMacroVariables($macro_styled, $macro["VARIABLES"], $style["VARIABLES"]);
                         }
 
                         if (isset($style["QUOTEMARKS"])) {
