@@ -9,8 +9,7 @@ use Nette\Caching\Storages\PhpFileStorage,
 
 class Panel extends \Nette\Object implements \Nette\Diagnostics\IBarPanel
 {
-	const XHR_HEADER = 'TemplateEditorPanel',
-                SESSION_NAMESPACE = 'TemplateEditorPanel';
+	const XHR_HEADER = 'TemplateEditorPanel';
 
 	/** @var Container */
 	protected $container;
