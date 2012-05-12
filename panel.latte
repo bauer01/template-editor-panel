@@ -33,7 +33,7 @@
 
     <div id="templateEditorPanel-wrapper">
             <div id="templateEditorPanel-gutter">
-                <ul id="templateEditorPanel-gutter-list">
+                <ul>
                     <li></li>
                 </ul>
             </div>
@@ -43,11 +43,6 @@
     <input id="templateEditorPanel-button-save" type="button" value="Save" title="Save document - CTRL + S" />
     <input id="templateEditorPanel-autoRefresh" type="checkbox" checked /> Refresh page
 </div>
-{else}
-<h1>Template Editor</h1>
-<div class="nette-inner">No template available.</div>
-{/ifset}
-
 <script type="text/javascript">
 var cookies = {
         create: function(name,value,days) {
@@ -187,8 +182,7 @@ templateEditorPanel = {
                 req.send(JSON.stringify(postData));
         },
         refreshGutter: function() {
-                var linesCount = document.getElementById("templateEditorPanel-editor").innerHTML.split(/\n|<br>|<pre>/).length;
-                var listOrigElm = document.getElementById("templateEditorPanel-gutter-list");
+                var linesCount = document.getElementById("templateEditorPanel-editor").innerHTML.toLowerCase().split(/\n|<br>|<pre>|<p>/).length;
                 var listNew = "";
 
                 for (var i = 1, linesCount; i <= linesCount; i++)
@@ -196,9 +190,14 @@ templateEditorPanel = {
                     listNew += "<li><pre>" + i + "</pre></li>";
                 }
 
-                listOrigElm.innerHTML = listNew;
+                var listOrigElm = document.getElementById("templateEditorPanel-gutter").getElementsByTagName("ul");
+                listOrigElm[0].innerHTML = listNew;
         }
 }
 
 templateEditorPanel.init();
 </script>
+{else}
+<h1>Template Editor</h1>
+<div class="nette-inner">No template available.</div>
+{/ifset}
