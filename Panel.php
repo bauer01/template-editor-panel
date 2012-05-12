@@ -138,12 +138,16 @@ class Panel extends \Nette\Object implements \Nette\Diagnostics\IBarPanel
 
 
         /**
-         * It helps to prevent double lines in <pre> tag
+         * Replace new lines ending with <br>
          * @param string $string
          * @return string
          */
         private function nl2br($string)
         {
-                return str_replace("\n", "<br>", $string);
+                $string = str_replace("\r\n", "<br>", $string); # CR + LF Windows
+                $string = str_replace("\n", "<br>", $string); # CR (Carriage Return) Unix
+                $string = str_replace("\r", "<br>", $string); # LF (Line Feed) Mac OS
+
+                return $string;
         }
 }
