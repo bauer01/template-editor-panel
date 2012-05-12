@@ -13,7 +13,7 @@
 
     #nette-debug #templateEditorPanel-wrapper { position: relative; font-size: 12px; border: 1px solid #EEEEEE; height: 300px; width: 650px; overflow: auto; resize: both; }
 
-    #nette-debug #templateEditorPanel-editor { margin-left: 50px; height: 100%; float: left; padding: 5px; width: 585px; }
+    #nette-debug #templateEditorPanel-editor { margin-left: 50px; float: left; padding: 5px; }
 
     #nette-debug #templateEditorPanel-gutter { position: absolute; z-index: 1; background: #F7F7F7; border-right: 1px solid #EEEEEE; float: left; }
     #nette-debug #templateEditorPanel-gutter ul { list-style: none; margin: 0; padding-top: 5px; }
@@ -37,9 +37,7 @@
                     <li></li>
                 </ul>
             </div>
-            <div id="templateEditorPanel-editor" contentEditable="true">
-                <pre id="templateEditorPanel-editor-code">{!$templateCode}</pre>
-            </div>
+            <pre><div id="templateEditorPanel-editor" contentEditable="true">{!$templateCode}</div></pre>
     </div>
     <div style="clear: both;"></div>
     <input id="templateEditorPanel-button-save" type="button" value="Save" title="Save document - CTRL + S" />
@@ -75,10 +73,7 @@ var cookies = {
 
 templateEditorPanel = {
 	init: function() {
-		var saveButton = document.getElementById("templateEditorPanel-button-save"),
-                    codeEditor = document.getElementById("templateEditorPanel-editor-code");
-
-		saveButton.onclick = function () {
+		document.getElementById("templateEditorPanel-button-save").onclick = function () {
 			templateEditorPanel.save(false);
 		};
                 templateEditorPanel.addEvent(document, "keydown", function(event) {
@@ -90,7 +85,7 @@ templateEditorPanel = {
                 });
                 templateEditorPanel.setLoadTime();
                 templateEditorPanel.refreshGutter();
-                templateEditorPanel.addEvent(codeEditor, "DOMNodeInserted DOMNodeRemoved DOMCharacterDataModified", function() {
+                templateEditorPanel.addEvent(document.getElementById("templateEditorPanel-editor"), "DOMNodeInserted DOMNodeRemoved DOMCharacterDataModified", function() {
                         templateEditorPanel.refreshGutter();
                 });
 	},
@@ -147,19 +142,17 @@ templateEditorPanel = {
         },
         save: function(force) {
                 var req = templateEditorPanel.createXMLHTTPObject(),
-                    code = document.getElementById("templateEditorPanel-editor-code"),
+                    code = document.getElementById("templateEditorPanel-editor"),
                     postData = { {$xhr_header}: {
                         "file": {$templatePath},
                         "loadtime": templateEditorPanel.getLoadTime(),
                         "force": force
                     }};
 
-                var newlines = code.innerHTML.replace(/<br\s*\/?>/mg,"\n"),
-                    div = document.createElement("div");
-                div.innerHTML = newlines;
-                code = div;
-
-                postData.{!$xhr_header}.data = code.innerText || code.textContent;
+                var dummyDiv = document.createElement("div");
+                dummyDiv.innerHTML = code.innerHTML;
+                dummyDiv.innerHTML = dummyDiv.innerHTML.replace(/<br\s*\/?>/mg, "\n");
+                postData.{!$xhr_header}.data = dummyDiv.innerText || dummyDiv.textContent;
 
                 if (!req) return;
                 req.open("POST", {$presenterLink}, true);
@@ -194,8 +187,7 @@ templateEditorPanel = {
                 req.send(JSON.stringify(postData));
         },
         refreshGutter: function() {
-                var editorCodeElm = document.getElementById("templateEditorPanel-editor-code");
-                var linesCount = editorCodeElm.innerHTML.split(/\n|<br>|<pre>/).length;
+                var linesCount = document.getElementById("templateEditorPanel-editor").innerHTML.split(/\n|<br>|<pre>/).length;
                 var listOrigElm = document.getElementById("templateEditorPanel-gutter-list");
                 var listNew = "";
 
