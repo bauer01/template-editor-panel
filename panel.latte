@@ -183,7 +183,7 @@ templateEditorPanel = {
                 }
 
                 if (req.readyState == 4) return;
-                req.send(JSON.stringify(postData));
+                req.send(templateEditorPanel.stringify(postData));
         },
         refreshGutter: function() {
                 var linesCount = document.getElementById("templateEditorPanel-editor").innerHTML.toLowerCase().split(/\n|<br>|<pre>|<p>/).length;
@@ -196,6 +196,28 @@ templateEditorPanel = {
 
                 var listOrigElm = document.getElementById("templateEditorPanel-gutter").getElementsByTagName("ul");
                 listOrigElm[0].innerHTML = listNew;
+        },  
+        stringify : function (obj) {
+                // http://www.sitepoint.com/javascript-json-serialization
+                if (window.JSON) return JSON.stringify(obj);
+
+                var t = typeof (obj);  
+                if (t != "object" || obj === null) {  
+                    // simple data type  
+                    if (t == "string") obj = '"'+obj+'"';  
+                    return String(obj);  
+                }  
+                else {  
+                    // recurse array or object  
+                    var n, v, json = [], arr = (obj && obj.constructor == Array);  
+                    for (n in obj) {  
+                        v = obj[n]; t = typeof(v);  
+                        if (t == "string") v = '"'+v+'"';  
+                        else if (t == "object" && v !== null) v = templateEditorPanel.stringify(v);  
+                        json.push((arr ? "" : '"' + n + '":') + String(v));  
+                    }  
+                    return (arr ? "[" : "{") + String(json) + (arr ? "]" : "}");  
+                }  
         }
 }
 
