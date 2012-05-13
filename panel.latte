@@ -65,22 +65,26 @@ var cookies = {
                 return null;
         }
 },
-
 templateEditorPanel = {
 	init: function() {
+                var isCtrl = false;
+                var codeEditor = document.getElementById("templateEditorPanel-editor");
 		document.getElementById("templateEditorPanel-button-save").onclick = function () {
 			templateEditorPanel.save(false);
 		};
-                templateEditorPanel.addEvent(document, "keydown", function(event) {
+                templateEditorPanel.addEvent(codeEditor, "keyup", function(event) {
+                        if (event.which == 17) isCtrl=false;
+                });
+                templateEditorPanel.addEvent(codeEditor, "keydown", function(event) {
                         if(event.which == 17) isCtrl = true;
                         if(event.which == 83 && isCtrl == true) {   // ctrl + s
                                 templateEditorPanel.save(false);
-                                event.preventDefault();
+                                event.preventDefault ? event.preventDefault() : event.returnValue = false;
                         }
                 });
                 templateEditorPanel.setLoadTime();
                 templateEditorPanel.refreshGutter();
-                templateEditorPanel.addEvent(document.getElementById("templateEditorPanel-editor"), "DOMNodeInserted DOMNodeRemoved DOMCharacterDataModified", function() {
+                templateEditorPanel.addEvent(codeEditor, "DOMNodeInserted DOMNodeRemoved DOMCharacterDataModified", function() {
                         templateEditorPanel.refreshGutter();
                 });
 	},
