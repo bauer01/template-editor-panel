@@ -48,7 +48,7 @@ $filters[] = array(
                 'table', 'tbody', 'td', 'textarea', 'text', 'tfoot', 'thead', 'th', 'title', 'tr', 'tt',
                 'ul', 'u',
                 'var'
-                ),
+            ),
             "PROPERTIES" => array(
                 'abbr=', 'accept-charset=', 'accept=', 'accesskey=', 'action=', 'align=', 'alink=', 'alt=', 'archive=', 'axis=',
                 'background=', 'bgcolor=', 'border=',
@@ -69,7 +69,7 @@ $filters[] = array(
                 'usemap',
                 'valign=', 'value=', 'valuetype', 'version', 'vlink', 'vspace',
                 'width='
-                ),
+            ),
             "QUOTEMARKS" => array("'", '"')
         )
     ),
