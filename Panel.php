@@ -73,10 +73,7 @@ class Panel extends \Nette\Object implements \Nette\Diagnostics\IBarPanel
      */
     private function handleRequest()
     {
-        $container = $this->container;
-
-        $request = $container->httpRequest;
-
+        $request = $this->container->httpRequest;
         if ($request->isPost() && $request->isAjax() && $request->getHeader(self::XHR_HEADER)) {
 
             $data = json_decode(file_get_contents("php://input"));
@@ -91,7 +88,6 @@ class Panel extends \Nette\Object implements \Nette\Diagnostics\IBarPanel
                 }
                 $this->save($data->data, $data->file);
             }
-
             die();
         }
     }
