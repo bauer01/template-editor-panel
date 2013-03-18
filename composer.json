@@ -1,0 +1,17 @@
+{
+    "name": "bauer01/TemplateEditorPanel",
+    "type": "library",
+    "description": "Template editor panel for Nette Framework",
+    "keywords": ["nette", "panel", "editor", "template", "latte"],
+    "homepage": "https://github.com/bauer01",
+    "license": ["MIT license"],
+    "authors": [
+        {
+            "name": "Bronislav Sedlák",
+            "homepage": "https://github.com/bauer01"
+        }
+    ],
+    "require": {
+        "php": ">= 5.3.0"
+    }
+}
