@@ -4,9 +4,6 @@ namespace TemplateEditor;
 
 use Nette\Utils\Finder;
 
-/**
- * @todo add caching
- */
 class Filter
 {
 
