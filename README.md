@@ -7,7 +7,7 @@ This panel provides lightweight template editor for your applications based on N
 The best way to install is using [Composer](http://getcomposer.org/):
 
 ```sh
-$ composer require bauer01/TemplateEditorPanel
+$ composer require bauer01/template-editor-panel
 ```
 
 Then register panel in your `config.neon`:

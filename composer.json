@@ -1,5 +1,5 @@
 {
-    "name": "bauer01/TemplateEditorPanel",
+    "name": "bauer01/template-editor-panel",
     "type": "library",
     "description": "Template editor panel for Nette Framework",
     "keywords": ["nette", "panel", "editor", "template", "latte"],
