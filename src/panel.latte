@@ -2,18 +2,12 @@
 <style type="text/css">
 {include "styles.css"}
 </style>
-
 <h1>Template Editor - {basename($templatePath)}</h1>
 <div class="nette-inner">
     <div id="templateEditorPanel-message" class="hide"></div>
-
-    <a href='#' rel='#nette-addons-details-1'>Details&nbsp;&#x25ba;</a>
-    <div id="nette-addons-details-1" style="display: none;">
-        <strong>Path:</strong> {$templatePath} <br />
-        <strong>File size:</strong> {filesize($templatePath)|bytes} <br />
-        <strong>Modified:</strong> {filemtime($templatePath)|date:'%H:%H:%S - %e. %h %Y'} <br />
-    </div>
-
+    <strong>Path:</strong> {$templatePath} <br />
+    <strong>File size:</strong> {filesize($templatePath)|bytes} <br />
+    <strong>Modified:</strong> {filemtime($templatePath)|date:'%H:%H:%S - %e. %h %Y'} <br />
     <div id="templateEditorPanel-wrapper">
             <div id="templateEditorPanel-gutter">
                 <ul>
