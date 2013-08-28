@@ -115,8 +115,8 @@ templateEditorPanel = {
                 req.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
                 req.onreadystatechange = function () {
                         if (req.readyState != 4) return;
-                        if (req.status != 200 && req.status != 304) {
-        			templateEditorPanel.showMessage('HTTP error ' + req.status, "error");
+                        if (req.status === 500) {
+        			templateEditorPanel.showMessage(req.responseText, "error");
                                 return;
                         }
                         if (req.status == 200) {

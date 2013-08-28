@@ -86,7 +86,12 @@ class Panel extends \Nette\Object implements \Nette\Diagnostics\IBarPanel
                         die();
                     }
                 }
-                $this->save($data->data, $data->file);
+                try {
+                    $this->save($data->data, $data->file);
+                } catch (\Exception $exception) {
+                    header('HTTP', true, 500);
+                    die($exception->getMessage());
+                }
             }
             die();
         }
@@ -100,11 +105,13 @@ class Panel extends \Nette\Object implements \Nette\Diagnostics\IBarPanel
      */
     private function save($data, $filePath)
     {
-        if (file_exists($filePath)) {
-            file_put_contents("safe://$filePath", $data);
-        } else {
-            throw new \Nette\FileNotFoundException("File $filePath already does not exist!");
+        if (!file_exists($filePath)) {
+            throw new \Exception("File {$filePath} already does not exist!");
         }
+        if (!is_writable($filePath)) {
+            throw new \Exception("File {$filePath} is not writable!");
+        }
+        file_put_contents("safe://$filePath", $data);
     }
 
     /**
