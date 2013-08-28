@@ -1,0 +1,15 @@
+#nette-debug strong { font-weight: bold; }
+
+#nette-debug #templateEditorPanel-button-save { border: 1px solid #000000; background: #EDEAE0; cursor: pointer; padding: 5px;}
+#nette-debug #templateEditorPanel-button-save:hover { background: #cccccc; }
+#nette-debug #templateEditorPanel-message { padding: 5px; font-weight: normal; border: 1px solid #fed22f; background: #ffe45c; color: #363636; font-weight: bold; }
+#nette-debug #templateEditorPanel-message.hide { display: none; }
+#nette-debug #templateEditorPanel-message.error { border: 1px solid #cd0a0a; background: #be2e17; color: #ffffff; }
+
+#nette-debug #templateEditorPanel-wrapper { position: relative; font-size: 12px; border: 1px solid #EEEEEE; height: 300px; width: 650px; overflow: auto; resize: both; }
+
+#nette-debug #templateEditorPanel-editor { margin-left: 50px; float: left; padding: 5px; }
+
+#nette-debug #templateEditorPanel-gutter { position: absolute; z-index: 1; background: #F7F7F7; border-right: 1px solid #EEEEEE; float: left; }
+#nette-debug #templateEditorPanel-gutter ul { list-style: none; margin: 0; padding-top: 5px; }
+#nette-debug #templateEditorPanel-gutter li { text-align: right; color: #aaaaaa; padding: 0 5px 0 10px; }

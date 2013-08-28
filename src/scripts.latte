@@ -1,0 +1,180 @@
+<script type="text/javascript">
+var cookies = {
+        create: function(name,value,days) {
+                if (days) {
+                        var date = new Date();
+                        date.setTime(date.getTime()+(days*24*60*60*1000));
+                        var expires = "; expires="+date.toGMTString();
+                }
+                else var expires = "";
+                document.cookie = name+"="+value+expires+"; path=/";
+        },
+        read: function(name) {
+                var nameEQ = name + "=",
+                    ca = document.cookie.split(';');
+                for(var i=0;i < ca.length;i++) {
+                        var c = ca[i];
+                        while (c.charAt(0)==' ') c = c.substring(1,c.length);
+                        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+                }
+                return null;
+        }
+},
+templateEditorPanel = {
+	init: function() {
+                var isCtrl = false;
+                var codeEditor = document.getElementById("templateEditorPanel-editor");
+		document.getElementById("templateEditorPanel-button-save").onclick = function () {
+			templateEditorPanel.save(false);
+		};
+                templateEditorPanel.addEvent(codeEditor, "keyup", function(event) {
+                        if (event.which == 17) isCtrl=false;
+                });
+                templateEditorPanel.addEvent(codeEditor, "keydown", function(event) {
+                        if(event.which == 17) isCtrl = true;
+                        if(event.which == 83 && isCtrl == true) {   // ctrl + s
+                                templateEditorPanel.save(false);
+                                event.preventDefault ? event.preventDefault() : event.returnValue = false;
+                        }
+                });
+                templateEditorPanel.setLoadTime();
+                templateEditorPanel.refreshGutter();
+                templateEditorPanel.addEvent(codeEditor, "DOMNodeInserted DOMNodeRemoved DOMCharacterDataModified", function() {
+                        templateEditorPanel.refreshGutter();
+                });
+	},
+        addEvent: function(elem, eventNames, eventHandle) {
+                eventArray = eventNames.split(" ");
+                for ( i = 0; i < eventArray.length; i++ ) {
+
+                        if (elem.addEventListener) {
+                                elem.addEventListener(eventArray[i], eventHandle, false);
+
+                        } else if (elem.attachEvent) {
+                                elem.attachEvent("on" + eventArray[i], eventHandle);
+
+                        }
+                }
+        },
+        getLoadTime: function() {
+                return cookies.read("{!$xhr_header}-LoadTime");
+        },
+        setLoadTime: function() {
+                var key = "{!$xhr_header}-LoadTime";
+                cookies.create(key, Math.round((new Date()).getTime() / 1000));
+        },
+        showMessage: function(message, status) {
+                var elem = document.getElementById("templateEditorPanel-message");
+
+                if (message) {
+                        elem.innerHTML = message;
+                        elem.removeAttribute("class");
+                        if (status)
+                                elem.setAttribute("class", status);
+                        elem.style.display = "block";
+                        setTimeout(function() { elem.style.display = "none"; }, 10000);
+                }
+        },
+        XMLHttpFactories: [
+                function () { return new XMLHttpRequest()},
+                function () { return new ActiveXObject("Msxml2.XMLHTTP")},
+                function () { return new ActiveXObject("Msxml3.XMLHTTP")},
+                function () { return new ActiveXObject("Microsoft.XMLHTTP")}
+        ],
+        createXMLHTTPObject: function() {
+                var xmlhttp = false;
+                for (var i = 0; i < templateEditorPanel.XMLHttpFactories.length; i++) {
+                        try {
+                                xmlhttp = templateEditorPanel.XMLHttpFactories[i]();
+                        }
+                        catch (e) {
+                                continue;
+                        }
+                        break;
+                }
+                return xmlhttp;
+        },
+        save: function(force) {
+                var req = templateEditorPanel.createXMLHTTPObject(),
+                    code = document.getElementById("templateEditorPanel-editor"),
+                    postData = { {$xhr_header}: {
+                        "file": {$templatePath},
+                        "loadtime": templateEditorPanel.getLoadTime(),
+                        "force": force
+                    }};
+
+                var dummyDiv = document.createElement("div");
+                dummyDiv.innerHTML = code.innerHTML;
+                dummyDiv.innerHTML = dummyDiv.innerHTML.replace(/<br\s*\/?>/mg, "\n");
+                postData.{!$xhr_header}.data = dummyDiv.innerText || dummyDiv.textContent;
+
+                if (!req) return;
+                req.open("POST", {$presenterLink}, true);
+                req.setRequestHeader({$xhr_header}, 'devel');
+                req.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+                req.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
+                req.onreadystatechange = function () {
+                        if (req.readyState != 4) return;
+                        if (req.status != 200 && req.status != 304) {
+        			templateEditorPanel.showMessage('HTTP error ' + req.status, "error");
+                                return;
+                        }
+                        if (req.status == 200) {
+                                var autoRefresh = document.getElementById("templateEditorPanel-autoRefresh");
+
+                                if (req.responseText == "needconfirm" && force == false) {
+                                        if (confirm("Document was already modificated by someone else. Do you really want to continue?")) {
+                                                templateEditorPanel.save(true);
+                                        }
+                                        return;
+                                } else  {
+                                        templateEditorPanel.showMessage("Successfully saved");
+                                        templateEditorPanel.setLoadTime();
+                                        if (autoRefresh.checked == true) {
+                                                window.location.reload();
+                                        }
+                                }
+                        }
+                }
+
+                if (req.readyState == 4) return;
+                req.send(templateEditorPanel.stringify(postData));
+        },
+        refreshGutter: function() {
+                var linesCount = document.getElementById("templateEditorPanel-editor").innerHTML.toLowerCase().split(/\n|<br>|<pre>|<p>/).length;
+                var listNew = "";
+
+                for (var i = 1, linesCount; i <= linesCount; i++)
+                {
+                    listNew += "<li><pre>" + i + "</pre></li>";
+                }
+
+                var listOrigElm = document.getElementById("templateEditorPanel-gutter").getElementsByTagName("ul");
+                listOrigElm[0].innerHTML = listNew;
+        },  
+        stringify : function (obj) {
+                // http://www.sitepoint.com/javascript-json-serialization
+                if (window.JSON) return JSON.stringify(obj);
+
+                var t = typeof (obj);  
+                if (t != "object" || obj === null) {  
+                    // simple data type  
+                    if (t == "string") obj = '"'+obj+'"';  
+                    return String(obj);  
+                }  
+                else {  
+                    // recurse array or object  
+                    var n, v, json = [], arr = (obj && obj.constructor == Array);  
+                    for (n in obj) {  
+                        v = obj[n]; t = typeof(v);  
+                        if (t == "string") v = '"'+v+'"';  
+                        else if (t == "object" && v !== null) v = templateEditorPanel.stringify(v);  
+                        json.push((arr ? "" : '"' + n + '":') + String(v));  
+                    }  
+                    return (arr ? "[" : "{") + String(json) + (arr ? "]" : "}");  
+                }  
+        }
+}
+
+templateEditorPanel.init();
+</script>
