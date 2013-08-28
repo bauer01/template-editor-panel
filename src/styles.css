@@ -8,7 +8,7 @@
 
 #nette-debug #templateEditorPanel-wrapper { position: relative; font-size: 12px; border: 1px solid #EEEEEE; height: 300px; width: 650px; overflow: auto; resize: both; }
 
-#nette-debug #templateEditorPanel-editor { margin-left: 50px; float: left; padding: 5px; }
+#nette-debug #templateEditorPanel-editor { margin-left: 50px; float: left; padding: 5px; white-space: pre; }
 
 #nette-debug #templateEditorPanel-gutter { position: absolute; z-index: 1; background: #F7F7F7; border-right: 1px solid #EEEEEE; float: left; }
 #nette-debug #templateEditorPanel-gutter ul { list-style: none; margin: 0; padding-top: 5px; }
