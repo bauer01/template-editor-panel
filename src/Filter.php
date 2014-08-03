@@ -37,7 +37,7 @@ class Filter
 
     /**
      * Run filters
-     * @param string $code
+     * @param  string $code
      * @return string
      */
     public function applyFilters($code)
@@ -56,8 +56,8 @@ class Filter
 
     /**
      * Highlight code
-     * @param string $code
-     * @param array $filter
+     * @param  string $code
+     * @param  array  $filter
      * @return string
      */
     private function highlight($code, $filter)
@@ -213,7 +213,6 @@ class Filter
                     }
                 }
             }
-
 
             $replace = sprintf(self::HIGHLIGHTER, $style["MACROS"][$macroKey], $start);
             $macro_styled = substr_replace($tag, $replace, 0, strlen($start));
