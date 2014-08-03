@@ -33,6 +33,7 @@ class Panel extends \Nette\Object implements \Nette\Diagnostics\IBarPanel
     {
         ob_start();
         require __DIR__ . "/tab.latte";
+
         return ob_get_clean();
     }
 
@@ -45,7 +46,7 @@ class Panel extends \Nette\Object implements \Nette\Diagnostics\IBarPanel
     {
         $template = new FileTemplate;
         $template->setFile(__DIR__ . "/panel.latte");
-        $template->onPrepareFilters[] = function($template) {
+        $template->onPrepareFilters[] = function ($template) {
                     $template->registerFilter(new Engine);
                 };
         $template->registerHelperLoader("\Nette\Templating\Helpers::loader");
@@ -65,6 +66,7 @@ class Panel extends \Nette\Object implements \Nette\Diagnostics\IBarPanel
 
         ob_start();
         echo $template->render();
+
         return ob_get_clean();
     }
 
@@ -127,12 +129,14 @@ class Panel extends \Nette\Object implements \Nette\Diagnostics\IBarPanel
         if (filemtime($filePath) > $loadtime) {
             return true;
         }
+
         return false;
     }
 
     private function printCode($file)
     {
         $filter = new Filter;
+
         return $this->nl2br($filter->applyFilters(file_get_contents($file)));
     }
 

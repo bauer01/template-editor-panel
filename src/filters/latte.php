@@ -36,4 +36,3 @@ $filters[] = array(
         )
     )
 );
-?>
